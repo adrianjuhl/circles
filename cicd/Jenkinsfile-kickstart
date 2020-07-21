@@ -1,0 +1,37 @@
+pipeline{
+  agent {
+    label 'maven'
+  }
+  environment{
+    //Use Pipeline Utility Steps plugin to read information from pom.xml into env variables
+    MVN_ARTIFACT_ID = readMavenPom().getArtifactId()
+    MVN_VERSION = readMavenPom().getVersion()
+    GIT_COMMIT_ID = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
+    BUILD_DTTM = sh(returnStdout: true, script: 'date +%Y%m%d%H%M%S').trim()
+  }
+
+  stages {
+
+    stage('Display environment variables') {
+      steps {
+        script {
+          openshift.withProject() {
+            sh """
+              set
+              echo "openshift.project() is ${openshift.project()}"
+            """
+          }
+        }
+      }
+    }
+
+    stage('Pipeline complete') {
+      steps{
+        script {
+          echo "Pipeline completed!"
+        }
+      }
+    }
+
+  }
+}
