@@ -23,6 +23,18 @@ $ curl -v http://127.0.0.1:8080/actuator/health
 Should respond with a HTTP 200 status and content: {"status":"UP"}
 ```
 
+## Deployment
+
+Deploy (create) the pipeline with the script: cicd/bin/deploy-pipeline.sh 
+
+Start the pipeline:
+
+```
+oc start-build circles --namespace=<namespace>
+or
+POST to the generic webhook
+```
+
 # License
 
 MIT

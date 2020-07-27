@@ -2,16 +2,16 @@
 
 main() {
   init "$@"
-  check-that-all-required-options-were-provided
+  ensure-that-each-required-option-is-provided
   ensure-oc-client-is-logged-in-to-correct-ocp-system
   print-vars
   ensure-target-directory-exists
-  prepare-kickstart-pipeline
-  apply-kickstart-pipeline
+  prepare-pipeline
+  apply-pipeline
 }
 
 usage() {
-  echo "usage: deploy-kickstart-pipeline.sh <options>"
+  echo "usage: deploy-pipeline.sh <options>"
   echo "where options are:"
   echo "    --application-name               applicationName              the name to give the application"
   echo "    --source-repo-git-uri            sourceRepoGitUri             the URI of the source repository"
@@ -67,9 +67,19 @@ init() {
     esac
     shift
   done
+
+  # If the kickstart pipeline already exists, the current trigger secret is left as is.
+  CURRENT_TRIGGER_SECRET=`oc get bc ${APPLICATION_NAME} --namespace=${JENKINS_BUILD_NAMESPACE} --output jsonpath='{@.spec.triggers[?(@.type=="Generic")].generic.secret}'`
+  echo 'CURRENT_TRIGGER_SECRET is '${CURRENT_TRIGGER_SECRET}
+  if [[ "${CURRENT_TRIGGER_SECRET}" == "" ]]; then
+    TRIGGER_PARAM_PART=''
+  else
+    TRIGGER_PARAM_PART=' --param=TRIGGER_SECRET='${CURRENT_TRIGGER_SECRET}
+  fi
+  echo 'TRIGGER_PARAM_PART is '${TRIGGER_PARAM_PART}
 }
 
-check-that-all-required-options-were-provided() {
+ensure-that-each-required-option-is-provided() {
   ERROR_MESSAGES=()
   if [ -z "$APPLICATION_NAME" ]; then
     echo "ERROR: option --application-name was not provided"
@@ -137,25 +147,21 @@ ensure-target-directory-exists() {
   mkdir target >/dev/null 2>&1
 }
 
-prepare-kickstart-pipeline() {
+prepare-pipeline() {
   oc process \
-      --filename ${PROJECT_BASE_DIR}/cicd/resources/ocp/kickstart-pipeline-template.yaml \
+      --filename ${PROJECT_BASE_DIR}/cicd/resources/ocp/pipeline-template.yaml \
       --param=APPLICATION_NAME=${APPLICATION_NAME} \
       --param=SOURCE_REPO_GIT_URI=${SOURCE_REPO_GIT_URI} \
       --param=SOURCE_REPO_GIT_BRANCH=${SOURCE_REPO_GIT_BRANCH} \
-      --param=CICD_RESOURCES_DIRECTORY=cicd \
-      --param=JENKINS_BUILD_NAMESPACE=${JENKINS_BUILD_NAMESPACE} \
-      --param=IMAGE_REGISTRY_NAMESPACE=${IMAGE_REGISTRY_NAMESPACE} \
-      --param=DEPLOYMENT_TARGET_NAMESPACE=${DEPLOYMENT_TARGET_NAMESPACE} \
-      --param=OCP_HOSTNAME_BASE=${OCP_HOSTNAME_BASE} \
-    > target/kickstart-pipeline.yml
+      ${TRIGGER_PARAM_PART} \
+    > target/pipeline.yml
 }
 
-apply-kickstart-pipeline() {
+apply-pipeline() {
   if [[ "$DRY_RUN" == "TRUE" ]]; then
-    cat target/kickstart-pipeline.yml
+    cat target/pipeline.yml
   else
-    cat target/kickstart-pipeline.yml \
+    cat target/pipeline.yml \
       | oc apply \
         --namespace=${JENKINS_BUILD_NAMESPACE} \
         --filename -
