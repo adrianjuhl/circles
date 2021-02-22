@@ -116,6 +116,79 @@ pipeline{
       }
     }
 
+    stage('Create application-deployment DeploymentConfig') {
+      steps {
+        dir("$WORKSPACE") {
+          sh """
+            oc get istag ${APPLICATION_NAME}:latest --namespace ${IMAGE_REGISTRY_NAMESPACE} -o template --template='{{ .image.metadata.name }}'
+            LATEST_BUILD_IMAGE_SHA256=\$(oc get istag ${APPLICATION_NAME}:latest --namespace ${IMAGE_REGISTRY_NAMESPACE} -o template --template='{{ .image.metadata.name }}')
+            echo LATEST_BUILD_IMAGE_SHA256 is \${LATEST_BUILD_IMAGE_SHA256}
+            oc process \
+                --filename ${OPENSHIFT_RESOURCES_DIRECTORY}/deployment-deployconfig-template.yaml \
+                --param=APPLICATION_NAME=${APPLICATION_NAME} \
+                --param=IMAGE_REGISTRY_NAMESPACE=${IMAGE_REGISTRY_NAMESPACE} \
+                --param=APPLICATION_VERSION=${MVN_VERSION}_${BUILD_DTTM} \
+                --param=GIT_COMMIT_ID=${GIT_COMMIT_ID} \
+                --param=APPLICATION_IMAGE_SHA256=\${LATEST_BUILD_IMAGE_SHA256} \
+                --param=SPRING_APPLICATION_JSON="`cat config/dev.json`" \
+              | oc apply \
+                    --namespace ${DEVELOPMENT_ENVIRONMENT_NAMESPACE} \
+                    --filename -
+          """
+        }
+      }
+    }
+
+    stage('Create application-deployment Service') {
+      steps {
+        dir("$WORKSPACE") {
+          sh """
+            oc process \
+                --filename ${OPENSHIFT_RESOURCES_DIRECTORY}/deployment-service-template.yaml \
+                --param=APPLICATION_NAME=${APPLICATION_NAME} \
+              | oc apply \
+                  --namespace ${DEVELOPMENT_ENVIRONMENT_NAMESPACE} \
+                  --filename -
+          """
+        }
+      }
+    }
+
+    stage('Create application-deployment Route') {
+      steps {
+        dir("$WORKSPACE") {
+          sh """
+            oc process \
+                --filename ${OPENSHIFT_RESOURCES_DIRECTORY}/deployment-route-template.yaml \
+                --param=APPLICATION_NAME=${APPLICATION_NAME} \
+              | oc apply \
+                    --namespace ${DEVELOPMENT_ENVIRONMENT_NAMESPACE} \
+                    --filename -
+          """
+        }
+      }
+    }
+
+    stage('Rollout to Development environment and wait for rollout...') {
+      steps {
+        script {
+          openshift.withCluster() {
+            openshift.withProject("${DEVELOPMENT_ENVIRONMENT_NAMESPACE}") {
+              def result = null
+              deploymentConfig = openshift.selector("deploymentconfig", "${APPLICATION_NAME}")
+              deploymentConfig.rollout().latest()
+              timeout(10) {
+                result = deploymentConfig.rollout().status("-w")
+              }
+              if (result.status != 0) {
+                error(result.err)
+              }
+            }
+          }
+        }
+      }
+    }
+
     stage('Pipeline complete') {
       steps{
         script {

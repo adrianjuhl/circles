@@ -11,7 +11,7 @@ A journey into continuous integration, continuous deployment, and DevOps.
 To run the application:
 
 ```
-$ mvn clean package && java -DSPRING_APPLICATION_JSON='{"logging.level.root":"INFO","spring.main.banner-mode":"off"}' -jar target/circles.jar
+$ mvn clean package && java -DSPRING_APPLICATION_JSON="`cat config/localdev.json`" -jar target/circles.jar
 ```
 
 ### Verify
@@ -30,7 +30,7 @@ Deploy (create) the pipeline with the script: cicd/bin/deploy-pipeline.sh
 Start the pipeline:
 
 ```
-oc start-build circles --namespace=<namespace>
+oc start-build circles-pipeline --namespace=<namespace>
 or
 POST to the generic webhook
 ```

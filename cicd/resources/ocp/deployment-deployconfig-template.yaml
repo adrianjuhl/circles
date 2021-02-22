@@ -1,0 +1,132 @@
+apiVersion: v1
+kind: Template
+labels:
+  app: ${APPLICATION_NAME}
+metadata:
+  name: ${APPLICATION_NAME}-deployment-deployconfig-template
+  creationTimestamp: null
+objects:
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    creationTimestamp: null
+    generation: 1
+    name: ${APPLICATION_NAME}
+    labels:
+      app: ${APPLICATION_NAME}
+      app-version: ${APPLICATION_VERSION}
+      app-git-commit: ${GIT_COMMIT_ID}
+  spec:
+    replicas: 1
+    revisionHistoryLimit: 4
+    selector:
+      app: ${APPLICATION_NAME}
+      deploymentconfig: ${APPLICATION_NAME}
+    strategy:
+      activeDeadlineSeconds: 21600
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        annotations:
+          openshift.io/generated-by: OpenShiftNewApp
+        creationTimestamp: null
+        labels:
+          app: ${APPLICATION_NAME}
+          app-version: ${APPLICATION_VERSION}
+          app-git-commit: ${GIT_COMMIT_ID}
+          deploymentconfig: ${APPLICATION_NAME}
+      spec:
+        containers:
+        - image: docker-registry.default.svc:5000/${IMAGE_REGISTRY_NAMESPACE}/${APPLICATION_NAME}@${APPLICATION_IMAGE_SHA256}
+          imagePullPolicy: Always
+          name: ${APPLICATION_NAME}
+          env:
+            - name: SPRING_APPLICATION_JSON
+              value: ${SPRING_APPLICATION_JSON}
+            - name: TZ
+              value: Australia/Adelaide
+          ports:
+          - containerPort: 8080
+            protocol: TCP
+          resources:
+            limits:
+              cpu: '${CPU_LIMIT}'
+              memory: '${MEM_LIMIT}'
+            requests:
+              cpu: '${CPU_REQUEST}'
+              memory: '${MEM_REQUEST}'
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+    test: false
+    triggers: []
+  status:
+    availableReplicas: 0
+    latestVersion: 0
+    observedGeneration: 0
+    replicas: 0
+    unavailableReplicas: 0
+    updatedReplicas: 0
+parameters:
+- name: APPLICATION_NAME
+  displayName: Application Name
+  description: The name of the application (i.e. Openshift Application name).
+  required: true
+- name: IMAGE_REGISTRY_NAMESPACE
+  displayName: Namespace that the application image of the application is in
+  description: Namespace that the application image of the application is in.
+  required: true
+- name: APPLICATION_VERSION
+  displayName: Application version identifier
+  description: Application version identifier.
+  required: true
+- name: APPLICATION_IMAGE_SHA256
+  displayName: The sha256 value of the application image to deploy
+  description: The sha256 value of the application image to deploy.
+  required: true
+- name: GIT_COMMIT_ID
+  displayName: The git commit relating to this deployment
+  description: The git commit relating to this deployment.
+  required: true
+- name: CPU_REQUEST
+  displayName: CPU request
+  description: The amount of CPU to requests.
+  value: '0'
+  required: true
+- name: CPU_LIMIT
+  displayName: CPU limit
+  description: The amount of CPU the container is limited to use.
+  value: '250m'
+  required: true
+- name: MEM_REQUEST
+  displayName: CPU request
+  description: The amount of CPU to requests.
+  value: '0'
+  required: true
+- name: MEM_LIMIT
+  displayName: CPU limit
+  description: The amount of CPU the container is limited to use.
+  value: '512Mi'
+  required: true
+- name: SPRING_APPLICATION_JSON
+  displayName: Spring Application configuration JSON
+  description: Spring Application configuration JSON.
+  value: '{"key":"value", "cxf.path":"/api"}'
+  required: true
