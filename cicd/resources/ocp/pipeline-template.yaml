@@ -11,7 +11,7 @@ objects:
 - apiVersion: v1
   kind: BuildConfig
   metadata:
-    name: ${APPLICATION_NAME}
+    name: ${APPLICATION_NAME}-pipeline
   spec:
     runPolicy: SerialLatestOnly
     source:
@@ -25,6 +25,12 @@ objects:
         env:
         - name: APPLICATION_NAME
           value: ${APPLICATION_NAME}
+        - name: OPENSHIFT_RESOURCES_DIRECTORY
+          value: cicd/resources/ocp
+        - name: IMAGE_REGISTRY_NAMESPACE
+          value: ${IMAGE_REGISTRY_NAMESPACE}
+        - name: DEVELOPMENT_ENVIRONMENT_NAMESPACE
+          value: ${DEVELOPMENT_ENVIRONMENT_NAMESPACE}
     triggers:
       - generic:
           secret: ${TRIGGER_SECRET}
@@ -48,3 +54,11 @@ parameters:
   required: true
   generate: expression
   from: "trigger-secret-[a-zA-Z0-9]{12}"
+- name: IMAGE_REGISTRY_NAMESPACE
+  displayName: Namespace that the application image is to placed in
+  description: Namespace that the application image is to placed in.
+  required: true
+- name: DEVELOPMENT_ENVIRONMENT_NAMESPACE
+  displayName: The Namespace of the development environment
+  description: The Namespace of the development environment.
+  required: true

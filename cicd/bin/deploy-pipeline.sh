@@ -18,7 +18,7 @@ usage() {
   echo "    --openshift-url                  openshiftUrl                 the URL of the OpenShift instance"
   echo "    --jenkins-build-namespace        jenkinsBuildNamespace        the namespace where jenkins builds occur"
   echo "    --image-registry-namespace       imageRegistryNamespace       the namespace where the built image is to be placed"
-  echo "    --deployment-target-namespace    deploymentTargetNamespace    the namespace where the app will be deployed to"
+  echo "    --development-namespace          developmentNamespace         the namespace of the development environment"
   echo "    --ocp-hostname-base              ocpHostnameBase              the base/suffix of the OCP hostname"
   echo "    --dry-run                                                     only print out the resources to be applied"
 }
@@ -33,7 +33,7 @@ init() {
   OPENSHIFT_URL=
   JENKINS_BUILD_NAMESPACE=
   IMAGE_REGISTRY_NAMESPACE=
-  DEPLOYMENT_TARGET_NAMESPACE=
+  DEVELOPMENT_ENVIRONMENT_NAMESPACE=
   OCP_HOSTNAME_BASE=
   DRY_RUN=FALSE
   while [ "$1" != "" ]; do
@@ -53,8 +53,8 @@ init() {
       --image-registry-namespace )       shift
                                          IMAGE_REGISTRY_NAMESPACE=$1
                                          ;;
-      --deployment-target-namespace )    shift
-                                         DEPLOYMENT_TARGET_NAMESPACE=$1
+      --development-namespace )          shift
+                                         DEVELOPMENT_ENVIRONMENT_NAMESPACE=$1
                                          ;;
       --ocp-hostname-base )              shift
                                          OCP_HOSTNAME_BASE=$1
@@ -69,7 +69,7 @@ init() {
   done
 
   # If the kickstart pipeline already exists, the current trigger secret is left as is.
-  CURRENT_TRIGGER_SECRET=`oc get bc ${APPLICATION_NAME} --namespace=${JENKINS_BUILD_NAMESPACE} --output jsonpath='{@.spec.triggers[?(@.type=="Generic")].generic.secret}'`
+  CURRENT_TRIGGER_SECRET=`oc get bc ${APPLICATION_NAME}-pipeline --namespace=${JENKINS_BUILD_NAMESPACE} --output jsonpath='{@.spec.triggers[?(@.type=="Generic")].generic.secret}'`
   echo 'CURRENT_TRIGGER_SECRET is '${CURRENT_TRIGGER_SECRET}
   if [[ "${CURRENT_TRIGGER_SECRET}" == "" ]]; then
     TRIGGER_PARAM_PART=''
@@ -106,8 +106,8 @@ ensure-that-each-required-option-is-provided() {
     usage
     exit 1
   fi
-  if [ -z "$DEPLOYMENT_TARGET_NAMESPACE" ]; then
-    echo "ERROR: option --deployment-target-namespace was not provided"
+  if [ -z "$DEVELOPMENT_ENVIRONMENT_NAMESPACE" ]; then
+    echo "ERROR: option --development-namespace was not provided"
     usage
     exit 1
   fi
@@ -126,7 +126,7 @@ print-vars() {
   echo SOURCE_REPO_GIT_BRANCH is ${SOURCE_REPO_GIT_BRANCH}
   echo JENKINS_BUILD_NAMESPACE is ${JENKINS_BUILD_NAMESPACE}
   echo IMAGE_REGISTRY_NAMESPACE is ${IMAGE_REGISTRY_NAMESPACE}
-  echo DEPLOYMENT_TARGET_NAMESPACE is ${DEPLOYMENT_TARGET_NAMESPACE}
+  echo DEVELOPMENT_ENVIRONMENT_NAMESPACE is ${DEVELOPMENT_ENVIRONMENT_NAMESPACE}
   echo OCP_HOSTNAME_BASE is ${OCP_HOSTNAME_BASE}
   echo DRY_RUN is ${DRY_RUN}
 }
@@ -153,6 +153,8 @@ prepare-pipeline() {
       --param=APPLICATION_NAME=${APPLICATION_NAME} \
       --param=SOURCE_REPO_GIT_URI=${SOURCE_REPO_GIT_URI} \
       --param=SOURCE_REPO_GIT_BRANCH=${SOURCE_REPO_GIT_BRANCH} \
+      --param=IMAGE_REGISTRY_NAMESPACE=${IMAGE_REGISTRY_NAMESPACE} \
+      --param=DEVELOPMENT_ENVIRONMENT_NAMESPACE=${DEVELOPMENT_ENVIRONMENT_NAMESPACE} \
       ${TRIGGER_PARAM_PART} \
     > target/pipeline.yml
 }
