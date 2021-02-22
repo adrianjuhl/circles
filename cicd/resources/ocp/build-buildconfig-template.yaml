@@ -1,0 +1,92 @@
+apiVersion: v1
+kind: Template
+labels:
+  app: ${APPLICATION_NAME}
+metadata:
+  name: ${APPLICATION_NAME}-build-buildconfig-template
+  annotations:
+    description: BuildConfig template for the ${APPLICATION_NAME} image build.
+  creationTimestamp: null
+objects:
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    creationTimestamp: null
+    labels:
+      app: ${APPLICATION_NAME}
+    name: ${APPLICATION_NAME}
+  spec:
+    runPolicy: SerialLatestOnly
+    output:
+      to:
+        kind: ImageStreamTag
+        name: ${APPLICATION_NAME}:latest
+      imageLabels:
+      - name: app
+        value: ${APPLICATION_NAME}
+      - name: uoa.git.commit.id
+        value: ${GIT_COMMIT_ID}
+      - name: uoa.version.and.datetime
+        value: VERSION_${MVN_VERSION}_${BUILD_DTTM}
+    resources:
+      limits:
+        cpu: '${CPU_LIMIT}'
+        memory: '${MEM_LIMIT}'
+      requests:
+        cpu: '${CPU_REQUEST}'
+        memory: '${MEM_REQUEST}'
+    source:
+      binary:
+      type: "Binary"
+    strategy:
+      sourceStrategy:
+        env:
+        - name: BUILD_LOGLEVEL
+          value: "8"
+        from:
+          kind: ImageStreamTag
+          # Custom base image or image shipped by RedHat -- we're using the image from RedHat
+          # we might need though to determine the exact RedHat image version that we need
+          # and not rely on "latest"
+          name: redhat-openjdk18-openshift:latest
+          namespace: openshift
+        incremental: false
+      type: Source
+parameters:
+- name: APPLICATION_NAME
+  displayName: Application Name
+  description: The name of the application (i.e. Openshift Application name).
+  required: true
+- name: CPU_REQUEST
+  displayName: CPU request
+  description: The amount of CPU to requests.
+  value: '0'
+  required: true
+- name: CPU_LIMIT
+  displayName: CPU limit
+  description: The amount of CPU the container is limited to use.
+  value: '500m'
+  required: true
+- name: MEM_REQUEST
+  displayName: CPU request
+  description: The amount of CPU to requests.
+  value: '0'
+  required: true
+- name: MEM_LIMIT
+  displayName: CPU limit
+  description: The amount of CPU the container is limited to use.
+  value: '768Mi'
+  required: true
+- name: GIT_COMMIT_ID
+  displayName: git commit hash
+  description: The git commit hash of this build.
+  required: true
+- name: MVN_VERSION
+  displayName: mvn version
+  description: The mvn version value of this build.
+  required: true
+- name: BUILD_DTTM
+  displayName: build datetime
+  description: The datetime of this build.
+  required: true
+

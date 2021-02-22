@@ -49,6 +49,7 @@ pipeline{
             mvn clean
             mvn clean package
             #mvn --settings=cicd/maven-settings.xml clean package
+            ls -al target
           """
         }
       }
@@ -63,6 +64,55 @@ pipeline{
             """
           }
         }
+      }
+    }
+
+    stage('Create image-build ImageStream') {
+      steps {
+        dir("$WORKSPACE") {
+          sh """
+            oc process \
+                --filename ${OPENSHIFT_RESOURCES_DIRECTORY}/build-imagestream-template.yaml \
+                --param=APPLICATION_NAME=${APPLICATION_NAME} \
+              | oc apply \
+                --namespace ${IMAGE_REGISTRY_NAMESPACE} \
+                --filename -
+          """
+        }
+      }
+    }
+
+    stage('Create image-build BuildConfig') {
+      steps {
+        dir("$WORKSPACE") {
+          sh """
+            oc process \
+                --filename ${OPENSHIFT_RESOURCES_DIRECTORY}/build-buildconfig-template.yaml \
+                --param=APPLICATION_NAME=${APPLICATION_NAME} \
+                --param=GIT_COMMIT_ID=${GIT_COMMIT_ID} \
+                --param=MVN_VERSION=${MVN_VERSION} \
+                --param=BUILD_DTTM=${BUILD_DTTM} \
+              | oc apply \
+                --namespace ${IMAGE_REGISTRY_NAMESPACE} \
+                --filename -
+          """
+        }
+      }
+    }
+
+    stage('Build image') {
+      steps {
+        sh """
+          echo "*********************************************************************"
+          echo Build image
+          echo "*********************************************************************"
+          ls -al
+          ls -al target
+          oc start-build ${APPLICATION_NAME} \
+              --namespace ${IMAGE_REGISTRY_NAMESPACE} \
+              --from-file=target/${MVN_ARTIFACT_ID}.jar \
+              --follow
+        """
       }
     }
 
