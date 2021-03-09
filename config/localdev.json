@@ -1,6 +1,8 @@
 {
   "camel.context.shutdown.timeout":10,
+  "cxf.path":"/api",
   "logging.level.root":"INFO",
   "management.endpoints.web.exposure.include":"info,health",
+  "rest.service.resource":"/profile-management-anonymous/v1",
   "spring.main.banner-mode":"off"
 }
