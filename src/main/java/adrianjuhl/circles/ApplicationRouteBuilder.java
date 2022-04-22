@@ -18,7 +18,7 @@ public class ApplicationRouteBuilder extends RouteBuilder {
   @Autowired
   CamelContext camelContext;
 
-  @Value("${camel.context.shutdown.timeout}")
+  @Value("${camel.context.shutdown.timeout:10}")
   private Long camelContextShutdownTimeout;
 
   enum RouteDefnInfo {

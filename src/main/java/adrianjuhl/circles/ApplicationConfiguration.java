@@ -18,7 +18,7 @@ public class ApplicationConfiguration {
   @Autowired
   private Bus bus;
 
-  @Value("${rest.service.resource}")
+  @Value("${rest.service.resource:}")
   private String restServiceAddress;
 //
 //
