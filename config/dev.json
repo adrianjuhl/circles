@@ -1,5 +1,6 @@
 {
   "camel.context.shutdown.timeout":10,
   "logging.level.root":"INFO",
+  "management.endpoints.web.exposure.include":"info,health",
   "spring.main.banner-mode":"off"
 }
