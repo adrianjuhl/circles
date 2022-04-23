@@ -20,20 +20,16 @@
     <fuse-springboot-bom-version>7.9.0.fuse-sb2-790067-redhat-00002</fuse-springboot-bom-version>
   </properties>
 
-<!-- 
   <repositories>
+
     <repository>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-      <id>jboss-ea</id>
-      <url>https://repository.jboss.org/nexus/content/repositories/ea/</url>
+      <id>redhat-early-access</id>
+      <url>https://maven.repository.redhat.com/earlyaccess/all</url>
+      <releases><enabled>true</enabled></releases>
+      <snapshots><enabled>true</enabled></snapshots>
     </repository>
+
   </repositories>
- -->
 
   <!-- dependencyManagement and dependencies when using fuse-springboot-bom -->
   <dependencyManagement>
