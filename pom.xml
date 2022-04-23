@@ -16,12 +16,29 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <spring-boot-maven-plugin-version>2.4.3</spring-boot-maven-plugin-version>
     <!-- <fuse-springboot-bom-version>7.9.0.fuse-sb2-790034</fuse-springboot-bom-version> -->
-    <fuse-springboot-bom-version>7.10.0.fuse-sb2-7_10_0-00019-redhat-00002</fuse-springboot-bom-version>
+    <!-- <fuse-springboot-bom-version>7.10.0.fuse-sb2-7_10_0-00019-redhat-00002</fuse-springboot-bom-version> -->
+    <fuse-springboot-bom-version>7.9.0.fuse-sb2-790067-redhat-00002</fuse-springboot-bom-version>
   </properties>
+
+<!-- 
+  <repositories>
+    <repository>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <id>jboss-ea</id>
+      <url>https://repository.jboss.org/nexus/content/repositories/ea/</url>
+    </repository>
+  </repositories>
+ -->
 
   <!-- dependencyManagement and dependencies when using fuse-springboot-bom -->
   <dependencyManagement>
     <dependencies>
+
       <dependency>
         <groupId>org.jboss.redhat-fuse</groupId>
         <artifactId>fuse-springboot-bom</artifactId>
@@ -29,21 +46,46 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
+
     </dependencies>
   </dependencyManagement>
   <dependencies>
     <dependency>
       <groupId>org.apache.camel</groupId>
       <artifactId>camel-spring-boot-starter</artifactId>
+<!-- 
+      <version>2.23.2</version>
+ -->
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
       <artifactId>camel-cxf</artifactId>
+<!-- 
+      <version>2.23.2</version>
+ -->
     </dependency>
     <dependency>
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-spring-boot-starter-jaxrs</artifactId>
+<!-- 
+      <version>3.3.6</version>
+ -->
     </dependency>
+
+<!-- 
+    <dependency>
+      <groupId>jakarta.xml.bind</groupId>
+      <artifactId>jakarta.xml.bind-api</artifactId>
+      <version>3.0.0</version>
+    </dependency>
+ -->
+<!-- 
+    <dependency>
+      <groupId>jakarta.xml.bind</groupId>
+      <artifactId>jakarta.xml.bind-api</artifactId>
+      <version>2.3.3</version>
+    </dependency>
+ -->
   </dependencies>
 
 
