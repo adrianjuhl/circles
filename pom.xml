@@ -15,7 +15,8 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <spring-boot-maven-plugin-version>2.4.3</spring-boot-maven-plugin-version>
-    <fuse-springboot-bom-version>7.9.0.fuse-sb2-790034</fuse-springboot-bom-version>
+    <!-- <fuse-springboot-bom-version>7.9.0.fuse-sb2-790034</fuse-springboot-bom-version> -->
+    <fuse-springboot-bom-version>7.10.0.fuse-sb2-7_10_0-00019-redhat-00002</fuse-springboot-bom-version>
   </properties>
 
   <!-- dependencyManagement and dependencies when using fuse-springboot-bom -->
