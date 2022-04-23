@@ -205,7 +205,7 @@ pipeline{
       steps {
         script {
           openshift.withCluster() {
-            openshift.withProject("${DEVELOPMENT_ENVIRONMENT_NAMESPACE}") {
+            openshift.withProject("dev") {
               def result = null
               deploymentConfig = openshift.selector("deploymentconfig", "${APPLICATION_NAME}")
               deploymentConfig.rollout().latest()
