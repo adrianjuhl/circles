@@ -15,11 +15,13 @@ pipeline{
     stage('Display environment variables') {
       steps {
         script {
-          openshift.withProject() {
-            sh """
-              set
-              echo "openshift.project() is ${openshift.project()}"
-            """
+          openshift.withCluster() {
+            openshift.withProject() {
+              sh """
+                set
+                echo "openshift.project() is ${openshift.project()}"
+              """
+            }
           }
         }
       }
