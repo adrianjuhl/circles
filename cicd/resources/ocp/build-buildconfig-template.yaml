@@ -48,7 +48,8 @@ objects:
           # Custom base image or image shipped by RedHat -- we're using the image from RedHat
           # we might need though to determine the exact RedHat image version that we need
           # and not rely on "latest"
-          name: redhat-openjdk18-openshift:latest
+          #name: redhat-openjdk18-openshift:latest
+          name: openjdk-11-rhel8:1.0
           namespace: openshift
         incremental: false
       type: Source
