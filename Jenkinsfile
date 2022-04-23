@@ -8,6 +8,8 @@ pipeline{
     MVN_VERSION = readMavenPom().getVersion()
     GIT_COMMIT_ID = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
     BUILD_DTTM = sh(returnStdout: true, script: 'date +%Y%m%d%H%M%S').trim()
+    OPENSHIFT_RESOURCES_DIRECTORY = "cicd/resources/ocp"
+    APPLICATION_NAME = "circles"
   }
 
   stages {
@@ -76,14 +78,20 @@ pipeline{
     stage('Create image-build ImageStream') {
       steps {
         dir("$WORKSPACE") {
-          sh """
-            oc process \
-                --filename ${OPENSHIFT_RESOURCES_DIRECTORY}/build-imagestream-template.yaml \
-                --param=APPLICATION_NAME=${APPLICATION_NAME} \
-              | oc apply \
-                --namespace ${IMAGE_REGISTRY_NAMESPACE} \
-                --filename -
-          """
+          script {
+            openshift.withCluster() {
+              openshift.withProject() {
+                sh """
+                  oc process \
+                      --filename ${OPENSHIFT_RESOURCES_DIRECTORY}/build-imagestream-template.yaml \
+                      --param=APPLICATION_NAME=${APPLICATION_NAME} \
+                    | oc apply \
+                      --namespace ${openshift.project()} \
+                      --filename -
+                """
+              }
+            }
+          }
         }
       }
     }
