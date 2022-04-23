@@ -64,7 +64,7 @@ objects:
               memory: '${MEM_REQUEST}'
           readinessProbe:
             httpGet:
-              path: /actuator/health
+              path: /services/readinessprobe
               port: 8080
             initialDelaySeconds: 5
             periodSeconds: 5
