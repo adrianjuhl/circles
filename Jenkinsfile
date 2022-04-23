@@ -29,11 +29,13 @@ pipeline{
     stage('Display environment variables 2') {
       steps {
         script {
-          openshift.withProject() {
-            sh """
-              set
-              echo "openshift.project() is ${openshift.project()}"
-            """
+          openshift.withCluster() {
+            openshift.withProject() {
+              sh """
+                set
+                echo "openshift.project() is ${openshift.project()}"
+              """
+            }
           }
         }
       }
@@ -59,11 +61,13 @@ pipeline{
     stage('Display environment variables 3') {
       steps {
         script {
-          openshift.withProject() {
-            sh """
-              set
-              echo "openshift.project() is ${openshift.project()}"
-            """
+          openshift.withCluster() {
+            openshift.withProject() {
+              sh """
+                set
+                echo "openshift.project() is ${openshift.project()}"
+              """
+            }
           }
         }
       }
