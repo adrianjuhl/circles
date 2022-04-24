@@ -14,7 +14,7 @@ objects:
     creationTimestamp: null
     labels:
       app: ${APPLICATION_NAME}
-    name: ${APPLICATION_NAME}
+    name: ${APPLICATION_NAME}-image-build
   spec:
     runPolicy: SerialLatestOnly
     output:
