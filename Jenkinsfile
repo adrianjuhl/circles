@@ -161,7 +161,7 @@ pipeline{
                       --param=APPLICATION_IMAGE_SHA256=\${LATEST_BUILD_IMAGE_SHA256} \
                       --param=SPRING_APPLICATION_JSON="`cat config/dev.json`" \
                     | oc apply \
-                          --namespace=dev \
+                          --namespace=${openshift.project()} \
                           --filename -
                 """
               }
@@ -179,7 +179,7 @@ pipeline{
                 --filename ${OPENSHIFT_RESOURCES_DIRECTORY}/deployment-service-template.yaml \
                 --param=APPLICATION_NAME=${APPLICATION_NAME} \
               | oc apply \
-                  --namespace=dev \
+                  --namespace=${openshift.project()} \
                   --filename -
           """
         }
@@ -194,7 +194,7 @@ pipeline{
                 --filename ${OPENSHIFT_RESOURCES_DIRECTORY}/deployment-route-template.yaml \
                 --param=APPLICATION_NAME=${APPLICATION_NAME} \
               | oc apply \
-                    --namespace=dev \
+                    --namespace=${openshift.project()} \
                     --filename -
           """
         }
@@ -205,7 +205,7 @@ pipeline{
       steps {
         script {
           openshift.withCluster() {
-            openshift.withProject("dev") {
+            openshift.withProject() {
               def result = null
               deploymentConfig = openshift.selector("deploymentconfig", "${APPLICATION_NAME}")
               deploymentConfig.rollout().latest()
