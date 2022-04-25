@@ -131,7 +131,7 @@ pipeline{
                 echo "*********************************************************************"
                 ls -al
                 ls -al target
-                oc start-build ${APPLICATION_NAME} \
+                oc start-build ${APPLICATION_NAME}-image-build \
                     --namespace=${openshift.project()} \
                     --from-file=target/${MVN_ARTIFACT_ID}.jar \
                     --follow
