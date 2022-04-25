@@ -174,14 +174,20 @@ pipeline{
     stage('Create application-deployment Service') {
       steps {
         dir("$WORKSPACE") {
-          sh """
-            oc process \
-                --filename ${OPENSHIFT_RESOURCES_DIRECTORY}/deployment-service-template.yaml \
-                --param=APPLICATION_NAME=${APPLICATION_NAME} \
-              | oc apply \
-                  --namespace=${openshift.project()} \
-                  --filename -
-          """
+          script {
+            openshift.withCluster() {
+              openshift.withProject() {
+                sh """
+                  oc process \
+                      --filename ${OPENSHIFT_RESOURCES_DIRECTORY}/deployment-service-template.yaml \
+                      --param=APPLICATION_NAME=${APPLICATION_NAME} \
+                    | oc apply \
+                        --namespace=${openshift.project()} \
+                        --filename -
+                """
+              }
+            }
+          }
         }
       }
     }
@@ -189,14 +195,20 @@ pipeline{
     stage('Create application-deployment Route') {
       steps {
         dir("$WORKSPACE") {
-          sh """
-            oc process \
-                --filename ${OPENSHIFT_RESOURCES_DIRECTORY}/deployment-route-template.yaml \
-                --param=APPLICATION_NAME=${APPLICATION_NAME} \
-              | oc apply \
-                    --namespace=${openshift.project()} \
-                    --filename -
-          """
+          script {
+            openshift.withCluster() {
+              openshift.withProject() {
+                sh """
+                  oc process \
+                      --filename ${OPENSHIFT_RESOURCES_DIRECTORY}/deployment-route-template.yaml \
+                      --param=APPLICATION_NAME=${APPLICATION_NAME} \
+                    | oc apply \
+                          --namespace=${openshift.project()} \
+                          --filename -
+                """
+              }
+            }
+          }
         }
       }
     }
